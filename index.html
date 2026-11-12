@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Look — the review that writes itself</title>
+<meta name="description" content="Capture any window, mark what's wrong, and get a numbered review document. Free, open source, and nothing leaves your computer.">
+<meta property="og:title" content="Second Look">
+<meta property="og:description" content="AI builds it. You give it a second look. Capture any window, mark what's wrong, and the review writes itself.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://second-look-blond.vercel.app/">
+<meta property="og:image" content="https://second-look-blond.vercel.app/docs/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23d93a2b'/%3E%3Ctext x='16' y='22.5' text-anchor='middle' font-family='Helvetica,Arial,sans-serif' font-weight='700' font-size='19' fill='%23fff'%3E2%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="ribbon">
+  <a class="brand" href="https://github.com/melvynbrodie/second-look" target="_blank" rel="noopener" title="Second Look on GitHub">
+    <span class="logo">2</span><span class="wordmark">Second Look</span>
+  </a>
+
+  <div class="grp" role="toolbar" aria-label="Mark-up tools">
+    <button data-tool="box" class="on" title="Box — adds a numbered note (B)"><span class="sw box"></span>Box</button>
+    <button data-tool="ellipse" title="Circle — adds a numbered note (C)"><span class="sw ell"></span>Circle</button>
+    <button data-tool="hl" title="Highlighter — no number (H)"><span class="sw hl"></span>Highlight</button>
+    <button data-tool="erase" title="Erase — click a mark to remove it (E)"><span class="sw er"></span>Erase</button>
+    <button id="btnUndo" title="Undo the last mark">Undo</button>
+  </div>
+
+  <div class="grp">
+    <button id="btnReviews" title="All the reviews kept in this browser">Reviews</button>
+    <button id="btnSaveAs" title="Choose a folder for this review. It then saves there automatically.">Save as…</button>
+    <button id="btnNew">New</button>
+  </div>
+
+  <div class="grp menu-wrap">
+    <button id="btnExport" class="primary" aria-haspopup="true" aria-expanded="false">Export ▾</button>
+    <div class="menu" id="exportMenu" hidden>
+      <button id="btnWord"><b>Word report</b><small>A .docx to send to people. Videos play inside it.</small></button>
+      <button id="btnAI"><b>For an AI agent</b><small>Markdown plus marked-up images, ready for Claude, Cursor or ChatGPT.</small></button>
+    </div>
+  </div>
+
+  <span class="status" id="status" aria-live="polite"></span>
+</header>
+
+<div class="banner" id="banner" hidden></div>
+
+<div class="work">
+  <aside class="side">
+    <video id="preview" autoplay muted playsinline hidden></video>
+
+    <div class="card" id="emptyMsg">
+      <p><strong>Share the window you want to review.</strong> A PDF, a slide deck, a website, a design, or a phone mirrored to this computer.</p>
+      <details>
+        <summary>Reviewing a phone app?</summary>
+        <ul id="phoneHelp"></ul>
+      </details>
+    </div>
+    <div class="card" id="pausedMsg" hidden>
+      <p><strong>Sharing is paused.</strong> Screen capture is fully off, so protected video (Netflix and similar) plays normally.</p>
+      <p>Your review is untouched. Click <em>Resume sharing</em> and pick the window again.</p>
+    </div>
+
+    <button id="btnShare">Share a window</button>
+    <button id="btnPause" hidden>Pause sharing</button>
+    <button id="btnCap" class="primary big" disabled>Capture <kbd>Space</kbd></button>
+    <button id="btnReplay" disabled title="Saves the last 10–20 seconds as a video">Save what just happened <kbd>V</kbd></button>
+    <button id="btnClip" disabled><span class="dot"></span><span id="clipLabel">Record a clip</span> <kbd>R</kbd></button>
+
+    <ul class="help">
+      <li>Each capture becomes a numbered section in the review.</li>
+      <li>Draw a <b>box</b> or <b>circle</b> on it and a numbered note appears. Just type.</li>
+      <li><b>Enter</b> adds the next note. <b>Backspace</b> on an empty note deletes it.</li>
+      <li>Something didn't work? Press <b>V</b> right after: the last 10–20 seconds are saved as a video.</li>
+      <li>Already have screenshots? Paste them (<kbd id="pasteKey">⌘V</kbd>) or drag them in.</li>
+    </ul>
+    <p class="fine">Nothing you capture leaves this computer. No account, no upload.</p>
+  </aside>
+
+  <main class="docwrap" id="docwrap">
+    <div class="page">
+      <div id="docTitle" contenteditable="true" data-ph="Untitled review" spellcheck="true" hidden></div>
+      <div id="docMeta" hidden></div>
+      <div id="doc"></div>
+    </div>
+  </main>
+</div>
+
+<dialog id="library" aria-labelledby="libTitle">
+  <div class="lib">
+    <div class="lib-head">
+      <h2 id="libTitle">Your reviews</h2>
+      <button id="libNew" class="primary">New review</button>
+      <button id="libOpen" title="Open a review you saved to a folder, on this or another computer">Open a saved folder…</button>
+      <button id="libClose" class="lib-x" aria-label="Close">✕</button>
+    </div>
+    <p class="lib-empty" id="libEmpty">Nothing here yet. Every review you start is kept in this list so you can come back to it.</p>
+    <div class="lib-grid" id="libGrid"></div>
+    <p class="lib-foot">These reviews are stored in this browser, on this computer. Nobody else can see them, and anyone else who opens Second Look starts with an empty list of their own. Use <b>Save as…</b> to also keep a review as files you can back up or move.</p>
+  </div>
+</dialog>
+
+<dialog id="player"><video id="playerVideo" controls playsinline></video></dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
